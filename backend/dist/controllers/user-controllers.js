@@ -6,7 +6,7 @@ export const getAllUsers = async (req, res, next) => {
     try {
         // get all user from the database
         const users = await User.find();
-        return res.status(201).json({ message: "Ok", users });
+        return res.status(200).json({ message: "Ok", users });
     }
     catch (error) {
         console.log(error);
@@ -17,7 +17,7 @@ export const userSignUp = async (req, res, next) => {
     try {
         // User sign up
         const { name, email, password } = req.body;
-        const userExist = User.findOne(email);
+        const userExist = await User.findOne({ email });
         if (userExist) {
             return res.status(401).send("Email is already registered !!");
         }
@@ -30,7 +30,7 @@ export const userSignUp = async (req, res, next) => {
             signed: true,
             domain: "localhost",
             path: "/",
-        }); // when user agin  sign in , then the preveious cookie will be removed
+        }); // when user again  sign in , then the preveious cookie will be removed
         const token = createToken(user._id.toString(), user.email, "7d");
         const expires = new Date();
         expires.setDate(expires.getDate() + 7);
@@ -41,11 +41,11 @@ export const userSignUp = async (req, res, next) => {
             httpOnly: true,
             signed: true
         }); // for local browser
-        return res.status(201).json({ message: "Ok", id: user._id.toString() });
+        return res.status(201).json({ message: "Ok", name: user.name, email: user.email });
     }
     catch (error) {
         console.log(error);
-        return res.status(401).json({ message: "Error Occurs", cause: error.message });
+        return res.status(200).json({ message: "Error Occurs", cause: error.message });
     }
 };
 export const userLogin = async (req, res, next) => {
@@ -55,7 +55,7 @@ export const userLogin = async (req, res, next) => {
         // check email is regisotered or not
         const user = await User.findOne({ email });
         if (!user) {
-            return res.status(403).send("User not registered !! \n Please Register and Try again !!");
+            return res.status(401).send("User not registered !! \n Please Register and Try again !!");
         }
         // check password
         const isValidPassword = await compare(password, user.password);
@@ -78,7 +78,30 @@ export const userLogin = async (req, res, next) => {
             httpOnly: true,
             signed: true
         }); // for local browser
-        return res.status(201).json({ message: "Ok", id: user._id.toString() });
+        return res.status(200).json({ message: "Ok", name: user.name, email: user.email });
+    }
+    catch (error) {
+        console.log(error);
+        return res.status(200).json({ message: "Error Occurs", cause: error.message });
+    }
+};
+export const verifyUser = async (req, res, next) => {
+    try {
+        const user = await User.findById(res.locals.jwtData.id);
+        if (!user) {
+            return res.status(401).send("User not registered Or Token Malfuncioned");
+        }
+        if (user._id.toString() !== res.locals.jwtData.id) {
+            return res.status(401).send("Permission does't match");
+        }
+        // check password
+        res.clearCookie(COOKIE_NAME, {
+            httpOnly: true,
+            signed: true,
+            domain: "localhost",
+            path: "/",
+        }); // when user agin  sign in , then the preveious cookie will be removed
+        return res.status(200).json({ message: "Ok", name: user.name, email: user.email });
     }
     catch (error) {
         console.log(error);
