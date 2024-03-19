@@ -1,5 +1,4 @@
 import { Request , Response , NextFunction } from "express";
-import { param } from "express-validator";
 import jwt from "jsonwebtoken";
 import { COOKIE_NAME } from "./constants.js";
 import { resolve } from "path";
