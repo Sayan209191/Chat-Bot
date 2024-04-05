@@ -63,5 +63,5 @@ export const logoutUser = async () => {
     throw new Error("Unable to delete chats");
   }
   const data = await res.data;
-  return data;
+  return data;
 };

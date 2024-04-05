@@ -1,35 +1,28 @@
-import { body , ValidationChain, validationResult  } from "express-validator";
-import { Request, Response, NextFunction } from "express";
+import { NextFunction, Request, Response } from "express";
+import { body, ValidationChain, validationResult } from "express-validator";
 
-export const validate = (validations : ValidationChain[]) => {
-    return async (req:Request, res : Response, next : NextFunction) => {
-        // Array to collect validation errors
-        const validationErrors = [];
-
-        // Running all validations
-        for(let validation of validations) {
+export const validate = (validations: ValidationChain[]) => {
+    return async (req: Request, res: Response, next: NextFunction) => {
+        for (let validation of validations) {
             const result = await validation.run(req);
-            if(!result.isEmpty()) {
-                validationErrors.push(...result.array()); // Collecting validation errors
+            if (!result.isEmpty()) {
+                break;
             }
         }
-
-        // If there are validation errors, return them
-        if(validationErrors.length > 0) {
-            return res.status(422).json({ errors: validationErrors });
+        const errors = validationResult(req);
+        if (errors.isEmpty()) {
+            return next();
         }
-
-        // If no validation errors, proceed to the next middleware
-        return next();
+        return res.status(422).json({ errors: errors.array() });
     };
 };
 
 export const loginValidator = [
     body("email").trim().isEmail().withMessage("Email is required"),
     body("password")
-       .trim()
-       .isLength({min:6})
-       .withMessage("Password should contains atleast 6 character"),
+        .trim()
+        .isLength({ min: 6 })
+        .withMessage("Password should contain atleast 6 characters"),
 ];
 
 export const signupValidator = [
@@ -38,6 +31,5 @@ export const signupValidator = [
 ];
 
 export const chatCompletionValidator = [
-    body("message").notEmpty().withMessage("Message is required"),
+    body("message").notEmpty().withMessage("Message  is required"),
 ];
-

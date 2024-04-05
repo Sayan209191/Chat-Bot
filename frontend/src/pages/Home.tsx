@@ -32,6 +32,7 @@ const Home = () => {
                     }}
                 >
                     <img
+                        className="image-inverted rotate"
                         src="robot.png"
                         alt="robot"
                         style={{ width: "200px", margin: "auto" }}
@@ -43,7 +44,7 @@ const Home = () => {
                         style={{ width: "200px", margin: "auto" }}
                     />
                 </Box>
-                <Box sx={{ display: "flex", mx: "auto" }}>
+                <Box sx={{ display: "flex", width : "100%", mx: "auto" }}>
                     <img
                         src="chat.png"
                         alt="chatbot"
